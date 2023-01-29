@@ -3,10 +3,11 @@
 #include <cstring>
 #include <time.h>
 #include <unistd.h>
+#include <cstdlib>
 
 using namespace std;
 
-struct Instacia{
+struct Instancia{
     string nome;
     string location;
     string comment;
@@ -31,7 +32,14 @@ struct Node{
     unsigned int d;
 };
 
-void lerInstancia(string namefile,Instacia &inst){
+struct Truck{
+    unsigned int id;
+    int tempoGasto = 0;
+    int capacity = 0;
+};
+
+
+void lerInstancia(string namefile,Instancia &inst){
     char delimitador = ' ';
     ifstream arquivo(namefile);
     string nome;
@@ -151,25 +159,56 @@ void lerGrafo(string namefile,Node *vetor,int **MA,int size){
         for(int j = 0; j < size;j++){
             getline(arquivo,nome,delimitador);
             MA[i][j] = stoi(nome);
-            if(j == 99)
+            if(j == size-1)
                 delimitador = '\n';
         }
     }
     arquivo.close();
 }
 
-string verificaRestricao(){
-    string resposta = "Nao respeita";
+bool verificaRestricao(Node *vetor, Instancia inst){
 
-    return resposta;
+    bool worth = true;
+    Node Deposito = vetor[0];
+
+    Truck vrumVrum;
+
+    //Deposito -> 5 -> 12 -> 15 -> 22 -> Deposito #6
+    //Demanda: 0 + 30 + 24 + (-30) + (-24) + 0
+    //Tempo: (0)0 + [0, 5]15 + (5)3 + [5, 12]16 + (12)4 + [12, 15]20 + (15)5 + [15, 22]10 + (22)5 + [22, 0]19
+
+    int sequenciaDeposito[6] = {0, 5, 12, 15, 22, 0};
+    int sequenciaDemanda[6] = {0, 30, 24, -30, -24};
+    int sequnciaTempo[(6 * 2) - 1] = {0, 15, 3, 16, 4, 20, 5, 10, 5, 19};
+
+    for (int i = 0; i < 6; i++){
+        vrumVrum.capacity += sequenciaDemanda[i];
+        if (vrumVrum.capacity > inst.capacity)
+        {
+            worth = false;
+            break;
+        }
+    }
+
+    for (int i = 0; i < (6 * 2) - 1; i++){
+        vrumVrum.tempoGasto += sequnciaTempo[i];
+        if (vrumVrum.tempoGasto > inst.routTime)
+        {
+            worth = false;
+            break;
+        }
+        
+    }
+
+    return worth;
+
 }
 
-
-
 int main(){
-    Instacia inst;
 
-    time_t begin = time(NULL);
+    Instancia inst;
+
+    //time_t begin = time(NULL)
 
     lerInstancia("poa-n100-6.txt",inst);
 
@@ -178,22 +217,24 @@ int main(){
 
     lerGrafo("poa-n100-6.txt",vetor,MA,inst.size);
 
-    time_t end = time(NULL);
+    //time_t end = time(NULL);
 
-    cout << inst.nome << endl << inst.size << endl << inst.capacity << endl;
+    //cout << inst.nome << endl << inst.size << endl << inst.capacity << endl;
     
-    for(int i = 0; i < inst.size;i++){
-        cout << vetor[i].id << endl;
-    }
+    // for(int i = 0; i < inst.size;i++){
+    //     cout << vetor[i].id << endl;
+    // }
     
-    for (int i = 0; i < inst.size; i++){
-        for(int j = 0; j < inst.size;j++){
-            cout << MA[i][j] << " ";
-        }
-        cout << endl;
-    }
+    // for (int i = 0; i < inst.size; i++){
+    //     for(int j = 0; j < inst.size;j++){
+    //         cout << MA[i][j] << " ";
+    //     }
+    //     cout << endl;
+    // }
 
-    printf("The elapsed time is %d seconds", (end - begin));
+    cout << verificaRestricao(vetor,inst);
+
+    //printf("The elapsed time is %d seconds", (end - begin));
 
 
     delete []vetor;
