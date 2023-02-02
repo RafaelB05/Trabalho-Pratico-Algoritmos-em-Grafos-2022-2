@@ -1,3 +1,10 @@
+/*
+MacroEntrega 1: Leitura de Dados, Estruturas e verificação de restrição
+Enzo Velo :
+Lucas Gomes Colombo :
+Rafael Brunini : 202120488
+
+*/
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -171,7 +178,7 @@ bool verificaRestricao(Node *vetor, Instancia inst){
     bool worth = true;
     Node Deposito = vetor[0];
 
-    Truck vrumVrum;
+    Truck caminhao;
 
     //Deposito -> 5 -> 12 -> 15 -> 22 -> Deposito #6
     //Demanda: 0 + 30 + 24 + (-30) + (-24) + 0
@@ -182,8 +189,8 @@ bool verificaRestricao(Node *vetor, Instancia inst){
     int sequnciaTempo[(6 * 2) - 1] = {0, 15, 3, 16, 4, 20, 5, 10, 5, 19};
 
     for (int i = 0; i < 6; i++){
-        vrumVrum.capacity += sequenciaDemanda[i];
-        if (vrumVrum.capacity > inst.capacity)
+        caminhao.capacity += sequenciaDemanda[i];
+        if (caminhao.capacity > inst.capacity)
         {
             worth = false;
             break;
@@ -191,8 +198,8 @@ bool verificaRestricao(Node *vetor, Instancia inst){
     }
 
     for (int i = 0; i < (6 * 2) - 1; i++){
-        vrumVrum.tempoGasto += sequnciaTempo[i];
-        if (vrumVrum.tempoGasto > inst.routTime)
+        caminhao.tempoGasto += sequnciaTempo[i];
+        if (caminhao.tempoGasto > inst.routTime)
         {
             worth = false;
             break;
