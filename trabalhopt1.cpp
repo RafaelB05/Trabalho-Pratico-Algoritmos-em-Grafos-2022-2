@@ -1,10 +1,10 @@
 /*
 MacroEntrega 1: Leitura de Dados, Estruturas e verificação de restrição
-Enzo Velo :
+Enzo Velo : 
 Lucas Gomes Colombo : 202120795
 Rafael Brunini : 202120488
-
 */
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -44,7 +44,6 @@ struct Truck{
     int tempoGasto = 0;
     int capacity = 0;
 };
-
 
 void lerInstancia(string namefile,Instancia &inst){
     char delimitador = ' ';
@@ -173,7 +172,18 @@ void lerGrafo(string namefile,Node *vetor,int **MA,int size){
     arquivo.close();
 }
 
-bool verificaRestricao(Node *vetor, Instancia inst){
+void randomNumber(int *vetor, int nodesNumber, Instancia inst){
+    
+    srand(time(0)); // Seta a raiz da geração de numeros como o tempo atual
+
+    for (int i = 0; i < nodesNumber; i++) {
+        int random_number = (rand() % ((inst.size) / 2) - 1) + 1; // Gera X numeros aleatorios baseado no tamanho da instancia
+        vetor[i] = random_number;
+    }
+
+}
+
+bool verificaRestricao(Node *vetor, Instancia inst, int **MA){
 
     bool worth = true;
     Node Deposito = vetor[0];
@@ -184,28 +194,64 @@ bool verificaRestricao(Node *vetor, Instancia inst){
     //Demanda: 0 + 30 + 24 + (-30) + (-24) + 0
     //Tempo: (0)0 + [0, 5]15 + (5)3 + [5, 12]16 + (12)4 + [12, 15]20 + (15)5 + [15, 22]10 + (22)5 + [22, 0]19
 
-    int sequenciaDeposito[6] = {0, 5, 12, 15, 22, 0};
-    int sequenciaDemanda[6] = {0, 30, 24, -30, -24};
-    int sequnciaTempo[(6 * 2) - 1] = {0, 15, 3, 16, 4, 20, 5, 10, 5, 19};
+    /*-------SETANDO SEQUENCIA DE NODES E SEQUENCIA DE NODES POSTERIOR-------*/
 
-    for (int i = 0; i < 6; i++){
-        caminhao.capacity += sequenciaDemanda[i];
+    int nodesNumber;
+
+    cout << "Insira a quantidade de nodes que deseja testar: ";
+    cin >> nodesNumber;
+
+    int sequenciaNodes[nodesNumber];
+    int sequenciaNodesPosterior[nodesNumber];
+    
+    randomNumber(sequenciaNodes, nodesNumber, inst);
+    
+    sequenciaNodes[0] = 0; // Seta inicio do trajeto como Deposito (0)
+    sequenciaNodes[nodesNumber - 1] = 0; // Seta fim do trajeto como Deposito (0)
+    
+    cout << "Os Nodes selecionados foram: ";
+    for (int i = 0; i < nodesNumber; i++) 
+        cout << sequenciaNodes[i] << " ";
+
+    cout << endl;
+
+    for (int i = 0; i < nodesNumber; i++) 
+        sequenciaNodesPosterior[i] = vetor[sequenciaNodes[i]].d;
+
+    /*-------SETADO SEQUENCIA DE NODES E SEQUENCIA DE NODES POSTERIOR-------*/
+
+    for (int i = 0; i < nodesNumber; i++){ //ENCHENDO O CAMINHÃO
+        caminhao.capacity += vetor[sequenciaNodes[i]].dem;
+
         if (caminhao.capacity > inst.capacity)
         {
             worth = false;
+            cout << "!!!Capacidade Maxima atingida!!!" << endl;
             break;
         }
     }
 
-    for (int i = 0; i < (6 * 2) - 1; i++){
-        caminhao.tempoGasto += sequnciaTempo[i];
+    cout << "Capacidade usada total de: ";
+    cout << caminhao.capacity << endl;
+
+    //ESVAZIANDO CAMINHÃO
+    for (int i = 0; i < nodesNumber; i++){
+        caminhao.capacity -= vetor[sequenciaNodesPosterior[i]].dem;
+    }
+
+    for (int i = 0; i < nodesNumber; i++){
+        caminhao.tempoGasto += MA[sequenciaNodes[i]][sequenciaNodesPosterior[i]];
+        caminhao.tempoGasto += vetor[sequenciaNodes[i]].dur;
+        caminhao.tempoGasto += vetor[sequenciaNodesPosterior[i]].dur;
         if (caminhao.tempoGasto > inst.routTime)
         {
-            worth = false;
+            cout << "!!!Tempo Maximo Exedido!!!" << endl;
             break;
         }
-        
     }
+
+    cout << "Tempo gasto total de: ";
+    cout << caminhao.tempoGasto << endl;
 
     return worth;
 
@@ -214,15 +260,16 @@ bool verificaRestricao(Node *vetor, Instancia inst){
 int main(){
 
     Instancia inst;
-
+    string nomeInstancia;
     //time_t begin = time(NULL)
 
-    lerInstancia("poa-n100-6.txt",inst);
+    cin >> nomeInstancia;
+    lerInstancia(nomeInstancia,inst);
 
     Node *vetor = new Node[inst.size];
     int **MA = new int*[inst.size];
 
-    lerGrafo("poa-n100-6.txt",vetor,MA,inst.size);
+    lerGrafo(nomeInstancia,vetor,MA,inst.size);
 
     //time_t end = time(NULL);
 
@@ -239,7 +286,10 @@ int main(){
     //     cout << endl;
     // }
 
-    cout << verificaRestricao(vetor,inst);
+    if (verificaRestricao(vetor, inst, MA) == 1)
+        cout << "Verificado com sucesso!" << endl;
+    else
+        cout << "Verificado com falhas..." << endl;
 
     //printf("The elapsed time is %d seconds", (end - begin));
 
