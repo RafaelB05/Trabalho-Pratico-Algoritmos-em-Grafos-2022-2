@@ -1,6 +1,6 @@
 /*
 MacroEntrega 1: Leitura de Dados, Estruturas e verificação de restrição
-Enzo Velo : 
+Enzo Velo : 202120910
 Lucas Gomes Colombo : 202120795
 Rafael Brunini : 202120488
 */
